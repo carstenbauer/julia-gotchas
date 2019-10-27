@@ -681,6 +681,260 @@ div.title {text-align: center;}
 </pre>
 
 
+<p>Aboves code works fine and <code>7.0</code> is obviously the correct result. But it is <em>slow</em>&#33; To see this let&#39;s look at the LLVM code for this block.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>InteractiveUtils</span><span class='hljl-t'>
+</span><span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+;  @ none:2 within &#96;linearcombo&#39;
+; Function Attrs: uwtable
+define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_18472&#40;&#37;jl_valu
+e_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;**, i32&#41; #0 &#123;
+top:
+  &#37;3 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 3
+  &#37;gcframe &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 4
+  &#37;4 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe to i8*
+  call void @llvm.memset.p0i8.i32&#40;i8* &#37;4, i8 0, i32 32, i32 0, i1 false&#41;
+  &#37;5 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;**, align 8
+  store volatile &#37;jl_value_t addrspace&#40;10&#41;** &#37;1, &#37;jl_value_t addrspace&#40;10&#41;*
+** &#37;5, align 8
+  &#37;6 &#61; call &#37;jl_value_t*** inttoptr &#40;i64 1801343456 to &#37;jl_value_t*** &#40;&#41;*&#41;&#40;
+&#41; #3
+  &#37;7 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;*
+* &#37;gcframe, i32 0
+  &#37;8 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;7 to i64*
+  store i64 4, i64* &#37;8
+  &#37;9 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
+  &#37;10 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 1
+  &#37;11 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;10 to &#37;jl_value_t***
+  &#37;12 &#61; load &#37;jl_value_t**, &#37;jl_value_t*** &#37;9
+  store &#37;jl_value_t** &#37;12, &#37;jl_value_t*** &#37;11
+  &#37;13 &#61; bitcast &#37;jl_value_t*** &#37;9 to &#37;jl_value_t addrspace&#40;10&#41;***
+  store &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe, &#37;jl_value_t addrspace&#40;10&#41;*** 
+&#37;13
+  &#37;14 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
+tr &#40;i64 321116616 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+  &#37;15 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;15
+  &#37;16 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 0
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 142682640 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+drspace&#40;10&#41;** &#37;16
+  &#37;17 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 1
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 83594912 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
+rspace&#40;10&#41;** &#37;17
+  &#37;18 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;18
+  &#37;19 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
+_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
+  &#37;20 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
+tr &#40;i64 321116808 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+  &#37;21 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 3
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;21
+  &#37;22 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;22
+  &#37;23 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 0
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 133170128 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+drspace&#40;10&#41;** &#37;23
+  &#37;24 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 1
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;24
+  &#37;25 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;25
+  &#37;26 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
+_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
+  &#37;27 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 1
+  &#37;28 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** &#37;27
+  &#37;29 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
+  &#37;30 &#61; bitcast &#37;jl_value_t*** &#37;29 to &#37;jl_value_t addrspace&#40;10&#41;**
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;28, &#37;jl_value_t addrspace&#40;10&#41;** &#37;30
+  ret &#37;jl_value_t addrspace&#40;10&#41;* &#37;26
+&#125;
+</pre>
+
+
+<p>Even without knowing much about LLVM IR this really doesn&#39;t look like efficient low-level code for a simple multiplication and addition.</p>
+<p>The reason for this inefficiency is that global variables may change their value and, more importantly, their type at any point in time. Thus the compiler can&#39;t assume much about about <code>a</code> and <code>b</code> and has to produce generic, inefficient code that can handle all kinds of types.</p>
+<h3>Solution: Work in local scope</h3>
+<p>Wrapping everything in a function solves all the performance issues.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>outer</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>a</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>2.0</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>b</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>3.0</span><span class='hljl-t'>
+    </span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span><span class='hljl-t'>
+      </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-n'>a</span><span class='hljl-oB'>+</span><span class='hljl-n'>b</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>outer</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+7.0
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+;  @ none:2 within &#96;linearcombo&#39;
+; Function Attrs: uwtable
+define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_18472&#40;&#37;jl_valu
+e_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;**, i32&#41; #0 &#123;
+top:
+  &#37;3 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 3
+  &#37;gcframe &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 4
+  &#37;4 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe to i8*
+  call void @llvm.memset.p0i8.i32&#40;i8* &#37;4, i8 0, i32 32, i32 0, i1 false&#41;
+  &#37;5 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;**, align 8
+  store volatile &#37;jl_value_t addrspace&#40;10&#41;** &#37;1, &#37;jl_value_t addrspace&#40;10&#41;*
+** &#37;5, align 8
+  &#37;6 &#61; call &#37;jl_value_t*** inttoptr &#40;i64 1801343456 to &#37;jl_value_t*** &#40;&#41;*&#41;&#40;
+&#41; #3
+  &#37;7 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;*
+* &#37;gcframe, i32 0
+  &#37;8 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;7 to i64*
+  store i64 4, i64* &#37;8
+  &#37;9 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
+  &#37;10 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 1
+  &#37;11 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;10 to &#37;jl_value_t***
+  &#37;12 &#61; load &#37;jl_value_t**, &#37;jl_value_t*** &#37;9
+  store &#37;jl_value_t** &#37;12, &#37;jl_value_t*** &#37;11
+  &#37;13 &#61; bitcast &#37;jl_value_t*** &#37;9 to &#37;jl_value_t addrspace&#40;10&#41;***
+  store &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe, &#37;jl_value_t addrspace&#40;10&#41;*** 
+&#37;13
+  &#37;14 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
+tr &#40;i64 321116616 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+  &#37;15 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;15
+  &#37;16 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 0
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 142682640 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+drspace&#40;10&#41;** &#37;16
+  &#37;17 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 1
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 83594912 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
+rspace&#40;10&#41;** &#37;17
+  &#37;18 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;18
+  &#37;19 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
+_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
+  &#37;20 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
+tr &#40;i64 321116808 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+  &#37;21 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 3
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;21
+  &#37;22 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;22
+  &#37;23 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 0
+  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
+4 133170128 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+drspace&#40;10&#41;** &#37;23
+  &#37;24 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 1
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;24
+  &#37;25 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;3, i32 2
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;25
+  &#37;26 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
+_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
+  &#37;27 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
+** &#37;gcframe, i32 1
+  &#37;28 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** &#37;27
+  &#37;29 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
+  &#37;30 &#61; bitcast &#37;jl_value_t*** &#37;29 to &#37;jl_value_t addrspace&#40;10&#41;**
+  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;28, &#37;jl_value_t addrspace&#40;10&#41;** &#37;30
+  ret &#37;jl_value_t addrspace&#40;10&#41;* &#37;26
+&#125;
+</pre>
+
+
+<h3>1b&#41; Writing to global variables</h3>
+<p>To the confusion of many newcomers, the following simple for loop doesn&#39;t work as expected.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+<pre class="julia-error">
+ERROR: UndefVarError: a not defined
+</pre>
+
+
+<p>In fact, it even throws an error. The reason for this arguably somewhat unintuitive behavior are Julia&#39;s <a href="https://docs.julialang.org/en/latest/manual/variables-and-scoping">scoping rules</a>. In short, one must be explicit about writing to global variables by putting a <code>global</code> keyword in front of the assignment.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-kd'>global</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-n'>a</span>
+</pre>
+
+
+<pre class="output">
+10
+</pre>
+
+
+<p>However, instead of being explicit about writing to a global in most cases we just shouldn&#39;t use globals in the first place&#33; Note that the issue disappears automatically when working in local scopes.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+10
+</pre>
+
+
 <h2>2&#41; Type instabilities</h2>
 <p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p>
 
