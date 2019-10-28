@@ -662,7 +662,64 @@ div.title {text-align: center;}
           </div>
 
           <h1>Julia Gotchas</h1>
-<h2>1&#41; Global scope</h2>
+<h3>Gotcha 1: Global scope</h3>
+<p>To the confusion of many newcomers, the following simple for loop doesn&#39;t work as expected.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+<pre class="julia-error">
+ERROR: UndefVarError: a not defined
+</pre>
+
+
+<h4>Solution 1: Be explicit about writing to globals</h4>
+<p>The reason for this arguably somewhat unintuitive behavior are Julia&#39;s <a href="https://docs.julialang.org/en/latest/manual/variables-and-scoping">scoping rules</a>. In short, one must be explicit about writing to global variables by putting a <code>global</code> keyword in front of the assignment.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-kd'>global</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-n'>a</span>
+</pre>
+
+
+<pre class="output">
+10
+</pre>
+
+
+<h4>Solution 2: Work in local scopes</h4>
+<p>However, instead of being explicit about writing to a global in most cases we just shouldn&#39;t use globals in the first place &#40;see the next gotcha&#41;&#33; Note that the issue disappears automatically when working in local scopes.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>outer</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>outer</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+10
+</pre>
+
+
+<h2>Gotcha 2: Global variables</h2>
 
 
 <pre class='hljl'>
@@ -681,7 +738,8 @@ div.title {text-align: center;}
 </pre>
 
 
-<p>Aboves code works fine and <code>7.0</code> is obviously the correct result. But it is <em>slow</em>&#33; To see this let&#39;s look at the LLVM code for this block.</p>
+<p>This code works fine and <code>7.0</code> is obviously the correct result. So, what&#39;s the issue?</p>
+<p>Let&#39;s inspect the LLVM code that Julia produces for <code>linearcombo</code>.</p>
 
 
 <pre class='hljl'>
@@ -693,7 +751,7 @@ div.title {text-align: center;}
 <pre class="output">
 ;  @ none:2 within &#96;linearcombo&#39;
 ; Function Attrs: uwtable
-define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_18472&#40;&#37;jl_valu
+define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_20328&#40;&#37;jl_valu
 e_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;**, i32&#41; #0 &#123;
 top:
   &#37;3 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 3
@@ -719,19 +777,19 @@ top:
   store &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe, &#37;jl_value_t addrspace&#40;10&#41;*** 
 &#37;13
   &#37;14 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 321116616 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+tr &#40;i64 264352056 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;15 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;gcframe, i32 2
   store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;15
   &#37;16 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 0
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 142682640 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+4 144321040 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
 drspace&#40;10&#41;** &#37;16
   &#37;17 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 1
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 83594912 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
+4 76844704 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
 rspace&#40;10&#41;** &#37;17
   &#37;18 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 2
@@ -739,7 +797,7 @@ rspace&#40;10&#41;** &#37;17
   &#37;19 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
 _t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
   &#37;20 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 321116808 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+tr &#40;i64 275268280 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;21 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;gcframe, i32 3
   store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;21
@@ -749,7 +807,7 @@ tr &#40;i64 321116808 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;23 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 0
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 133170128 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+4 134808528 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
 drspace&#40;10&#41;** &#37;23
   &#37;24 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 1
@@ -770,10 +828,10 @@ _t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
 </pre>
 
 
-<p>Even without knowing much about LLVM IR this really doesn&#39;t look like efficient low-level code for a simple multiplication and addition.</p>
-<p>The reason for this inefficiency is that global variables may change their value and, more importantly, their type at any point in time. Thus the compiler can&#39;t assume much about about <code>a</code> and <code>b</code> and has to produce generic, inefficient code that can handle all kinds of types.</p>
-<h3>Solution: Work in local scope</h3>
-<p>Wrapping everything in a function solves all the performance issues.</p>
+<p>Even without knowing much about LLVM IR this really doesn&#39;t look like efficient low-level code for a simple multiplication and addition. Thus, our function <code>linearcombo</code> will be <em>slow</em>&#33;</p>
+<p>The reason for this inefficiency is that <code>a</code> and <code>b</code> in <code>linearcombo</code> are global variables which may change their value and, more importantly, their type at any point in time. Thus the compiler can&#39;t assume much about about <code>a</code> and <code>b</code> and has to produce generic, inefficient code that can handle all kinds of types.</p>
+<h4>Solution 1: Work in local scope</h4>
+<p>Wrapping everything in a function &#40;a local scope&#41; solves all the performance issues.</p>
 
 
 <pre class='hljl'>
@@ -796,146 +854,635 @@ _t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
 
 
 <pre class='hljl'>
-<span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span>
+<span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>outer</span><span class='hljl-p'>()</span>
 </pre>
 
 
 <pre class="output">
-;  @ none:2 within &#96;linearcombo&#39;
+;  @ none:2 within &#96;outer&#39;
 ; Function Attrs: uwtable
-define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_18472&#40;&#37;jl_valu
-e_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;**, i32&#41; #0 &#123;
+define double @julia_outer_20330&#40;&#41; #0 &#123;
 top:
-  &#37;3 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 3
-  &#37;gcframe &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 4
-  &#37;4 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe to i8*
-  call void @llvm.memset.p0i8.i32&#40;i8* &#37;4, i8 0, i32 32, i32 0, i1 false&#41;
-  &#37;5 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;**, align 8
-  store volatile &#37;jl_value_t addrspace&#40;10&#41;** &#37;1, &#37;jl_value_t addrspace&#40;10&#41;*
-** &#37;5, align 8
-  &#37;6 &#61; call &#37;jl_value_t*** inttoptr &#40;i64 1801343456 to &#37;jl_value_t*** &#40;&#41;*&#41;&#40;
-&#41; #3
-  &#37;7 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;*
-* &#37;gcframe, i32 0
-  &#37;8 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;7 to i64*
-  store i64 4, i64* &#37;8
-  &#37;9 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
-  &#37;10 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;gcframe, i32 1
-  &#37;11 &#61; bitcast &#37;jl_value_t addrspace&#40;10&#41;** &#37;10 to &#37;jl_value_t***
-  &#37;12 &#61; load &#37;jl_value_t**, &#37;jl_value_t*** &#37;9
-  store &#37;jl_value_t** &#37;12, &#37;jl_value_t*** &#37;11
-  &#37;13 &#61; bitcast &#37;jl_value_t*** &#37;9 to &#37;jl_value_t addrspace&#40;10&#41;***
-  store &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe, &#37;jl_value_t addrspace&#40;10&#41;*** 
-&#37;13
-  &#37;14 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 321116616 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
-  &#37;15 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;gcframe, i32 2
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;15
-  &#37;16 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 0
-  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 142682640 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
-drspace&#40;10&#41;** &#37;16
-  &#37;17 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 1
-  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 83594912 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
-rspace&#40;10&#41;** &#37;17
-  &#37;18 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 2
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;18
-  &#37;19 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
-_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
-  &#37;20 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 321116808 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
-  &#37;21 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;gcframe, i32 3
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;21
-  &#37;22 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;gcframe, i32 2
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;22
-  &#37;23 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 0
-  store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 133170128 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
-drspace&#40;10&#41;** &#37;23
-  &#37;24 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 1
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;24
-  &#37;25 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;3, i32 2
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;20, &#37;jl_value_t addrspace&#40;10&#41;** &#37;25
-  &#37;26 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
-_t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
-  &#37;27 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
-** &#37;gcframe, i32 1
-  &#37;28 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** &#37;27
-  &#37;29 &#61; getelementptr &#37;jl_value_t**, &#37;jl_value_t*** &#37;6, i32 0
-  &#37;30 &#61; bitcast &#37;jl_value_t*** &#37;29 to &#37;jl_value_t addrspace&#40;10&#41;**
-  store &#37;jl_value_t addrspace&#40;10&#41;* &#37;28, &#37;jl_value_t addrspace&#40;10&#41;** &#37;30
-  ret &#37;jl_value_t addrspace&#40;10&#41;* &#37;26
+  ret double 7.000000e&#43;00
 &#125;
 </pre>
 
 
-<h3>1b&#41; Writing to global variables</h3>
-<p>To the confusion of many newcomers, the following simple for loop doesn&#39;t work as expected.</p>
+<p>This is fast. In fact, it&#39;s not just fast, but pretty much as fast as it can be&#33; Julia has figured out the result of the calculation at compile-time and simply returns the result <code>7.0</code> when <code>outer</code> gets called&#33;</p>
+<h4>Solution 2: Use constant globals</h4>
+<p>By making <code>a</code> and <code>b</code> <code>const</code>ants, their value and type information is fixed at compile-time and efficient code can be produced.</p>
 
 
 <pre class='hljl'>
-<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
-</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
-    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+<span class='hljl-kd'>const</span><span class='hljl-t'> </span><span class='hljl-n'>A</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>2.0</span><span class='hljl-t'>
+</span><span class='hljl-kd'>const</span><span class='hljl-t'> </span><span class='hljl-n'>B</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>3.0</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span><span class='hljl-t'>
+  </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-n'>A</span><span class='hljl-oB'>+</span><span class='hljl-n'>B</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>linearcombo</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+;  @ none:3 within &#96;linearcombo&#39;
+; Function Attrs: uwtable
+define double @julia_linearcombo_20332&#40;&#41; #0 &#123;
+top:
+  ret double 7.000000e&#43;00
+&#125;
+</pre>
+
+
+<h2>Gotcha 3: Type instabilities</h2>
+<p>What&#39;s bad for performance in the following function <code>g</code>?</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span><span class='hljl-t'>
+  </span><span class='hljl-n'>x</span><span class='hljl-oB'>=</span><span class='hljl-ni'>1</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>/</span><span class='hljl-ni'>2</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+  </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
 </span><span class='hljl-k'>end</span>
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: a not defined
+<pre class="output">
+g &#40;generic function with 1 method&#41;
 </pre>
 
 
-<p>In fact, it even throws an error. The reason for this arguably somewhat unintuitive behavior are Julia&#39;s <a href="https://docs.julialang.org/en/latest/manual/variables-and-scoping">scoping rules</a>. In short, one must be explicit about writing to global variables by putting a <code>global</code> keyword in front of the assignment.</p>
+<p>We can figure out what&#39;s going on by inspecting the output of <code>@code_warntype</code>.</p>
 
 
 <pre class='hljl'>
-<span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
-</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
-    </span><span class='hljl-kd'>global</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
-</span><span class='hljl-k'>end</span><span class='hljl-t'>
-</span><span class='hljl-n'>a</span>
+<span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span>
 </pre>
 
 
 <pre class="output">
-10
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.g, false&#41;
+  x::UNION&#123;FLOAT64, INT64&#125;
+  @_3::UNION&#123;NOTHING, TUPLE&#123;INT64,INT64&#125;&#125;
+  i::Int64
+
+Body::Float64
+1 ─       &#40;x &#61; 1&#41;
+│   &#37;2  &#61; &#40;1:10&#41;::Core.Compiler.Const&#40;1:10, false&#41;
+│         &#40;@_3 &#61; Base.iterate&#40;&#37;2&#41;&#41;
+│   &#37;4  &#61; &#40;@_3::Core.Compiler.Const&#40;&#40;1, 1&#41;, false&#41; &#61;&#61;&#61; nothing&#41;::Core.Compi
+ler.Const&#40;false, false&#41;
+│   &#37;5  &#61; Base.not_int&#40;&#37;4&#41;::Core.Compiler.Const&#40;true, false&#41;
+└──       goto #4 if not &#37;5
+2 ┄ &#37;7  &#61; @_3::Tuple&#123;Int64,Int64&#125;::Tuple&#123;Int64,Int64&#125;
+│         &#40;i &#61; Core.getfield&#40;&#37;7, 1&#41;&#41;
+│   &#37;9  &#61; Core.getfield&#40;&#37;7, 2&#41;::Int64
+│         &#40;x &#61; x / 2&#41;
+│         &#40;@_3 &#61; Base.iterate&#40;&#37;2, &#37;9&#41;&#41;
+│   &#37;12 &#61; &#40;@_3 &#61;&#61;&#61; nothing&#41;::Bool
+│   &#37;13 &#61; Base.not_int&#40;&#37;12&#41;::Bool
+└──       goto #4 if not &#37;13
+3 ─       goto #2
+4 ┄       return x::Float64
 </pre>
 
 
-<p>However, instead of being explicit about writing to a global in most cases we just shouldn&#39;t use globals in the first place&#33; Note that the issue disappears automatically when working in local scopes.</p>
+<p>The line <code>x::Union&#123;Float64, Int64&#125;</code>, highlighted in red, indicates that the variable <code>x</code> doesn&#39;t have a single concrete type but instead has been <em>inferred</em> to be either a <code>Float64</code> or a <code>Int64</code>. Note that we have initialized <code>x</code> as an integer, <code>typeof&#40;1&#41; &#61;&#61; Int64</code>, but <code>x &#61; x/2</code> will certainly make it a floating point number in the first iteration of the loop.</p>
+<p>The fact, that the type of a variable can vary within a function is called a <em>type instability</em>.</p>
+<p>A more drastic example is the following</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>f</span><span class='hljl-p'>()</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>([</span><span class='hljl-nfB'>1.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;3&quot;</span><span class='hljl-p'>])</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+
+Body::ANY
+1 ─ &#37;1 &#61; Base.vect&#40;1.0, 2, &quot;3&quot;&#41;::Array&#123;Any,1&#125;
+│   &#37;2 &#61; Main.WeaveSandBox11.rand&#40;&#37;1&#41;::ANY
+└──      return &#37;2
+</pre>
+
+
+<p>The return type of <code>f</code> is inherently random - there is no way for the compiler to anticipate it and produce type stable code.</p>
+<h4>Solution 1: Avoid type changes</h4>
+<p>Clearly, we can readily remove the type instability by initializing <code>x</code> appropriately.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span><span class='hljl-t'>
+  </span><span class='hljl-n'>x</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>1.0</span><span class='hljl-t'> </span><span class='hljl-cs'># initialize x as Float64</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>/</span><span class='hljl-ni'>2</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+  </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+;  @ none:2 within &#96;g&#39;
+; Function Attrs: uwtable
+define double @julia_g_20333&#40;&#41; #0 &#123;
+top:
+;  @ none:6 within &#96;g&#39;
+  ret double 0x3F50000000000000
+&#125;
+</pre>
+
+
+<p>Note how the result has once again been determined at compile time&#33;</p>
+<h4>Solution 2: Specify types explicitly &#40;not recommended&#41;</h4>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span><span class='hljl-t'>
+  </span><span class='hljl-n'>x</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>/</span><span class='hljl-ni'>2</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+  </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_llvm</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+;  @ none:2 within &#96;g&#39;
+; Function Attrs: uwtable
+define double @julia_g_20334&#40;&#41; #0 &#123;
+top:
+;  @ none:6 within &#96;g&#39;
+  ret double 0x3F50000000000000
+&#125;
+</pre>
+
+
+<h4>&quot;Solution&quot; 3: Function barriers</h4>
+<p>Sometimes type instabilities are unavoidable. For example, think of user input or file reading where we might have to process a unkown mixture of integers and floats. Let&#39;s model this scenario. We assume we have the following input data:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Union</span><span class='hljl-p'>{</span><span class='hljl-n'>Int64</span><span class='hljl-p'>,</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-n'>String</span><span class='hljl-p'>}[</span><span class='hljl-ni'>4</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>2.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;test&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>3.2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-p'>]</span>
+</pre>
+
+
+<pre class="output">
+5-element Array&#123;Union&#123;Float64, Int64, String&#125;,1&#125;:
+ 4      
+ 2.0    
+  &quot;test&quot;
+ 3.2    
+ 1
+</pre>
+
+
+<p>Let&#39;s further assume that our goal is to calculate the square of every element. A naive implementation would look as follows.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>calc_square</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>eachindex</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>val</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>[</span><span class='hljl-n'>i</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-n'>val</span><span class='hljl-oB'>^</span><span class='hljl-ni'>2</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>calc_square</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.calc_square, false&#41;
+  x::Array&#123;Union&#123;Float64, Int64, String&#125;,1&#125;
+  @_3::UNION&#123;NOTHING, TUPLE&#123;INT64,INT64&#125;&#125;
+  i::Int64
+  val::UNION&#123;FLOAT64, INT64, STRING&#125;
+
+Body::Nothing
+1 ─ &#37;1  &#61; Main.WeaveSandBox11.eachindex&#40;x&#41;::Base.OneTo&#123;Int64&#125;
+│         &#40;@_3 &#61; Base.iterate&#40;&#37;1&#41;&#41;
+│   &#37;3  &#61; &#40;@_3 &#61;&#61;&#61; nothing&#41;::Bool
+│   &#37;4  &#61; Base.not_int&#40;&#37;3&#41;::Bool
+└──       goto #4 if not &#37;4
+2 ┄ &#37;6  &#61; @_3::Tuple&#123;Int64,Int64&#125;::Tuple&#123;Int64,Int64&#125;
+│         &#40;i &#61; Core.getfield&#40;&#37;6, 1&#41;&#41;
+│   &#37;8  &#61; Core.getfield&#40;&#37;6, 2&#41;::Int64
+│         &#40;val &#61; Base.getindex&#40;x, i&#41;&#41;
+│   &#37;10 &#61; val::UNION&#123;FLOAT64, INT64, STRING&#125;
+│   &#37;11 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;12 &#61; &#40;&#37;11&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│         Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;10, &#37;12&#41;
+│         &#40;@_3 &#61; Base.iterate&#40;&#37;1, &#37;8&#41;&#41;
+│   &#37;15 &#61; &#40;@_3 &#61;&#61;&#61; nothing&#41;::Bool
+│   &#37;16 &#61; Base.not_int&#40;&#37;15&#41;::Bool
+└──       goto #4 if not &#37;16
+3 ─       goto #2
+4 ┄       return
+</pre>
+
+
+<p>Unsurprisingly, as indicated by <code>val::Union&#123;Float64, Int64, String&#125;</code>, this implementation has a &#40;unavoidable&#41; type instability. The issue really is that this instability occurs in a hot loop: when trying to produce code that calculates <code>val^2</code> the compiler does not know whether <code>val</code> is a <code>Int64</code>, a <code>Float64</code>, or a <code>String</code>. It therefore has to produce generic code with branches for the different cases, which gets called over and over in each iteration at runtime.</p>
+<p>We can do better than this&#33; The crucial point is to separate the type-instability from the actual, potentially heavy computations.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>calc_square_outer</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>eachindex</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-nf'>calc_square_inner</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>[</span><span class='hljl-n'>i</span><span class='hljl-p'>])</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>calc_square_inner</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>^</span><span class='hljl-ni'>2</span>
+</pre>
+
+
+<pre class="output">
+calc_square_inner &#40;generic function with 1 method&#41;
+</pre>
+
+
+<p>By separating the reading from the actual calculation - taking the square - we allow the compiler to specialize the calculation for every possible input type. This way, only the reading will be type instable whereas the computation function <code>calc_square_inner</code> can be compiled to type-stable, efficient code.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>calc_square_inner</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.calc_square_inner, false&#41;
+  x::Int64
+
+Body::Int64
+1 ─ &#37;1 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;2 &#61; &#40;&#37;1&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│   &#37;3 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, x, &#37;2&#41;::Int64
+└──      return &#37;3
+</pre>
+
+
+<h2>Gotcha 4: Array slices produce copies</h2>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>BenchmarkTools</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>LinearAlgebra</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>M</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-ni'>3</span><span class='hljl-p'>);</span><span class='hljl-t'>
+</span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-ni'>3</span><span class='hljl-p'>);</span>
+</pre>
+
+
+
+<p>Say we were facing the following task: Given a 3x3 matrix <code>M</code> and a vector <code>v</code> calculate the dot product between the first column of <code>M</code> and <code>v</code>.</p>
+<p>A straightforward way to solve this task is</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-n'>M</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>dot</span><span class='hljl-p'>(</span><span class='hljl-n'>M</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-oB'>$</span><span class='hljl-n'>M</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+42.987 ns &#40;1 allocation: 112 bytes&#41;
+</pre>
+
+
+<p>A common Julia gotcha here is that array slices produce data copies&#33; <code>M&#91;1:3,1&#93;</code> allocates a new vector and fills it with the first column of <code>M</code> before the dot product is taken.</p>
+<p>Clearly, this copy is unnecessary. What we really want is to use the actual first column of <code>M</code>. We can tell Julia to do so by using the <code>view</code> function.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>g</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-n'>M</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>dot</span><span class='hljl-p'>(</span><span class='hljl-nf'>view</span><span class='hljl-p'>(</span><span class='hljl-n'>M</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>$</span><span class='hljl-n'>M</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+20.059 ns &#40;1 allocation: 64 bytes&#41;
+</pre>
+
+
+<p>Note that this is much more efficient&#33; Writing <code>view</code>s explicitly can become annoying quickly. Fortunately, there is a nice little convenience macro <code>@views</code> which automatically replaces all array slices in an expression by views.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>g</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-n'>M</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nd'>@views</span><span class='hljl-t'> </span><span class='hljl-nf'>dot</span><span class='hljl-p'>(</span><span class='hljl-n'>M</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>g</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>$</span><span class='hljl-n'>M</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+19.558 ns &#40;1 allocation: 64 bytes&#41;
+</pre>
+
+
+<h2>Gotcha 5: Temporary allocations in &quot;vectorized&quot; code</h2>
+<p>Often people &#40;like to&#41; write code like this.</p>
 
 
 <pre class='hljl'>
 <span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span><span class='hljl-t'>
-    </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-t'>
-    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>10</span><span class='hljl-t'>
-        </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>+=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'>
-    </span><span class='hljl-k'>end</span><span class='hljl-t'>
-    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'>
-</span><span class='hljl-k'>end</span><span class='hljl-t'>
-
-</span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span>
+  </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-ni'>5</span><span class='hljl-p'>,</span><span class='hljl-ni'>6</span><span class='hljl-p'>]</span><span class='hljl-t'>
+  </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>100_000</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-oB'>*</span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-cs'># &quot;vectorized&quot; style</span><span class='hljl-t'>
+  </span><span class='hljl-k'>end</span><span class='hljl-t'>
+  </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
 </pre>
 
 
 <pre class="output">
-10
+f &#40;generic function with 2 methods&#41;
 </pre>
 
 
-<h2>2&#41; Type instabilities</h2>
+<p>The issue here is that <code>x &#61; x &#43; 2*x</code>, while nicealy readable and compact, allocates temporary arrays, which often spoils performance.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>();</span>
+</pre>
+
+
+<pre class="output">
+6.860 ms &#40;200001 allocations: 21.36 MiB&#41;
+</pre>
+
+
+<p>As we can see, there are a total number of 200001 allocations&#40;&#33;&#41;. This indicates that there are 2 allocations per loop, one for the <code>2*x</code> and another one for the result of the addition. While it looks like <code>x</code>, that is its content, is overwritten in every iteration what really happens is that only the label <code>x</code> gets reassigned to a new piece of memory &#40;and the old memory is discarded&#41;.</p>
+<h4>Solution 1: Write out loops - they are fast</h4>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-ni'>5</span><span class='hljl-p'>,</span><span class='hljl-ni'>6</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>100_000</span><span class='hljl-t'>
+        </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>k</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>3</span><span class='hljl-t'>
+            </span><span class='hljl-n'>x</span><span class='hljl-p'>[</span><span class='hljl-n'>k</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>[</span><span class='hljl-n'>k</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-t'> </span><span class='hljl-oB'>*</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>[</span><span class='hljl-n'>k</span><span class='hljl-p'>]</span><span class='hljl-t'>
+        </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+<pre class="output">
+f &#40;generic function with 2 methods&#41;
+</pre>
+
+
+<p>Abandoning &quot;vectorized&quot; style, we can simply write out the loops explicitly to get great performance without temporary allocations.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>();</span>
+</pre>
+
+
+<pre class="output">
+231.299 μs &#40;1 allocation: 112 bytes&#41;
+</pre>
+
+
+<p>On my machine, this implementation is 45 times faster&#33; Note that the single allocation is the <code>x</code> that we eventually return.</p>
+<h4>Solution 2: Broadcasting aka &quot;more dots&quot;</h4>
+<p>We can use broadcasting to &#40;basically&#41; let Julia write the for loops for us. We only have to indicate elementwise operations by prepending them with a <code>.</code>.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-ni'>5</span><span class='hljl-p'>,</span><span class='hljl-ni'>6</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>100_000</span><span class='hljl-t'>
+        </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>.=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>.+</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-t'> </span><span class='hljl-oB'>.*</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-cs'># broadcasting / loop fusion</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>();</span>
+</pre>
+
+
+<pre class="output">
+282.800 μs &#40;1 allocation: 112 bytes&#41;
+</pre>
+
+
+<p>Although it doesn&#39;t quite reach the performance of the explicit-loops variant above, this approach provides a good compromise between speed and convenience. We can write &quot;vectorized&quot; code but avoid unnecessary temporary allocations that typically comes with it. &#40;Tipp: <code>@.</code> is a nice little macro that puts dots on every operation so that you don&#39;t have to write them yourself.&#41;</p>
+<p>Check out this <a href="https://julialang.org/blog/2017/01/moredots">great blog post</a> by Steven G. Johnson on this topic &#40;related notebook&#41;.</p>
+<h2>Gotcha 6: Abstract fields</h2>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>struct</span><span class='hljl-t'> </span><span class='hljl-n'>MyType</span><span class='hljl-t'>
+  </span><span class='hljl-n'>x</span><span class='hljl-oB'>::</span><span class='hljl-n'>AbstractFloat</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>a</span><span class='hljl-oB'>::</span><span class='hljl-n'>MyType</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-oB'>^</span><span class='hljl-ni'>2</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-nf'>sqrt</span><span class='hljl-p'>(</span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-cs'># some operation on our type</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>MyType</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.0</span><span class='hljl-p'>);</span>
+</pre>
+
+
+
+<p>The issue here is very much similar to what we have discussed above as type instabilities.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>a</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+  a::Main.WeaveSandBox11.MyType
+
+Body::ANY
+1 ─ &#37;1 &#61; Base.getproperty&#40;a, :x&#41;::ABSTRACTFLOAT
+│   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::ANY
+│   &#37;5 &#61; Base.getproperty&#40;a, :x&#41;::ABSTRACTFLOAT
+│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::ANY
+│   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::ANY
+└──      return &#37;7
+</pre>
+
+
+<p>Since <code>x</code> can be any subtype of <code>AbstractFloat</code> the compiler can&#39;t assume much about <code>x</code>s concrete structure. It therefore can only produce slow code.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>a</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+50.355 ns &#40;3 allocations: 48 bytes&#41;
+</pre>
+
+
+<p>Compare this to</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>sqrt</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.0</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+1.299 ns &#40;0 allocations: 0 bytes&#41;
+</pre>
+
+
+<h4>Solution 1: Specify concrete types for all fields</h4>
+<p>By specifying a concrete type for the field <code>x</code> we give the compiler the necessary information to produce efficient code.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>struct</span><span class='hljl-t'> </span><span class='hljl-n'>MyTypeConcrete</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>b</span><span class='hljl-oB'>::</span><span class='hljl-n'>MyTypeConcrete</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>b</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-oB'>^</span><span class='hljl-ni'>2</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-nf'>sqrt</span><span class='hljl-p'>(</span><span class='hljl-n'>b</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>b</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>MyTypeConcrete</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.0</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>b</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+  b::Main.WeaveSandBox11.MyTypeConcrete
+
+Body::Float64
+1 ─ &#37;1 &#61; Base.getproperty&#40;b, :x&#41;::Float64
+│   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float64
+│   &#37;5 &#61; Base.getproperty&#40;b, :x&#41;::Float64
+│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float64
+│   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float64
+└──      return &#37;7
+</pre>
+
+
+<p>Note that this implementation is more than 30x faster&#33;</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>b</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+1.599 ns &#40;0 allocations: 0 bytes&#41;
+</pre>
+
+
+<h4>Solution 2:</h4>
+<p>But what if I want to accept any kind of <code>AbstractFloat</code> in my type?</p>
+<p>Use a type parameter&#33;</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>struct</span><span class='hljl-t'> </span><span class='hljl-nf'>MyTypeParametric</span><span class='hljl-p'>{</span><span class='hljl-n'>A</span><span class='hljl-oB'>&lt;:</span><span class='hljl-n'>AbstractFloat</span><span class='hljl-p'>}</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-oB'>::</span><span class='hljl-n'>A</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>c</span><span class='hljl-oB'>::</span><span class='hljl-n'>MyTypeParametric</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>c</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-oB'>^</span><span class='hljl-ni'>2</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-nf'>sqrt</span><span class='hljl-p'>(</span><span class='hljl-n'>c</span><span class='hljl-oB'>.</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>c</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>MyTypeParametric</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.0</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>c</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+  c::Main.WeaveSandBox11.MyTypeParametric&#123;Float64&#125;
+
+Body::Float64
+1 ─ &#37;1 &#61; Base.getproperty&#40;c, :x&#41;::Float64
+│   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float64
+│   &#37;5 &#61; Base.getproperty&#40;c, :x&#41;::Float64
+│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float64
+│   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float64
+└──      return &#37;7
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>c</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+1.599 ns &#40;0 allocations: 0 bytes&#41;
+</pre>
+
+
+<p>From the type alone the compiler knows what the structure contains and can produce optimal code.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>c</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>MyTypeParametric</span><span class='hljl-p'>(</span><span class='hljl-nf'>Float32</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.0</span><span class='hljl-p'>))</span><span class='hljl-t'>
+
+</span><span class='hljl-nd'>@code_warntype</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-n'>c</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Variables
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+  c::Main.WeaveSandBox11.MyTypeParametric&#123;Float32&#125;
+
+Body::Float32
+1 ─ &#37;1 &#61; Base.getproperty&#40;c, :x&#41;::Float32
+│   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
+│   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float32
+│   &#37;5 &#61; Base.getproperty&#40;c, :x&#41;::Float32
+│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float32
+│   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float32
+└──      return &#37;7
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@btime</span><span class='hljl-t'> </span><span class='hljl-nf'>f</span><span class='hljl-p'>(</span><span class='hljl-oB'>$</span><span class='hljl-n'>c</span><span class='hljl-p'>);</span>
+</pre>
+
+
+<pre class="output">
+1.599 ns &#40;0 allocations: 0 bytes&#41;
+</pre>
+
+
 <p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p>
 
 
@@ -944,7 +1491,7 @@ ERROR: UndefVarError: a not defined
           <div class="footer"><p>
           Published from <a href="gotcha.jmd">gotcha.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2019-10-27.
+           on 2019-10-28.
           <p></div>
 
 
