@@ -1,4 +1,7 @@
-# Julia Gotchas
+---
+title: Julia Gotchas and How to Avoid Them
+author: Carsten Bauer
+---
 
 ### Gotcha 1: Global scope
 To the confusion of many newcomers, the following simple for loop

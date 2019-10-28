@@ -3,7 +3,7 @@
 <HEAD>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  
+  <title>Julia Gotchas and How to Avoid Them</title>
   
 
   <script type="text/x-mathjax-config">
@@ -196,6 +196,10 @@ sub {
 }
 img {
   border: 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 70%;
 }
 svg:not(:root) {
   overflow: hidden;
@@ -656,13 +660,12 @@ div.title {text-align: center;}
         <div class = "col-md-12 twelve columns">
 
           <div class="title">
-            
-            
+            <h1 class="title">Julia Gotchas and How to Avoid Them</h1>
+            <h5>Carsten Bauer</h5>
             
           </div>
 
-          <h1>Julia Gotchas</h1>
-<h3>Gotcha 1: Global scope</h3>
+          <h3>Gotcha 1: Global scope</h3>
 <p>To the confusion of many newcomers, the following simple for loop doesn&#39;t work as expected.</p>
 
 
@@ -751,7 +754,7 @@ ERROR: UndefVarError: a not defined
 <pre class="output">
 ;  @ none:2 within &#96;linearcombo&#39;
 ; Function Attrs: uwtable
-define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_20328&#40;&#37;jl_valu
+define nonnull &#37;jl_value_t addrspace&#40;10&#41;* @japi1_linearcombo_18690&#40;&#37;jl_valu
 e_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;**, i32&#41; #0 &#123;
 top:
   &#37;3 &#61; alloca &#37;jl_value_t addrspace&#40;10&#41;*, i32 3
@@ -777,19 +780,19 @@ top:
   store &#37;jl_value_t addrspace&#40;10&#41;** &#37;gcframe, &#37;jl_value_t addrspace&#40;10&#41;*** 
 &#37;13
   &#37;14 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 264352056 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+tr &#40;i64 329706872 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;15 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;gcframe, i32 2
   store &#37;jl_value_t addrspace&#40;10&#41;* &#37;14, &#37;jl_value_t addrspace&#40;10&#41;** &#37;15
   &#37;16 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 0
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 144321040 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+4 150874640 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
 drspace&#40;10&#41;** &#37;16
   &#37;17 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 1
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 76844704 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
+4 91786912 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t add
 rspace&#40;10&#41;** &#37;17
   &#37;18 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 2
@@ -797,7 +800,7 @@ rspace&#40;10&#41;** &#37;17
   &#37;19 &#61; call nonnull &#37;jl_value_t addrspace&#40;10&#41;* @jl_apply_generic&#40;&#37;jl_value
 _t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
   &#37;20 &#61; load &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;** inttop
-tr &#40;i64 275268280 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
+tr &#40;i64 330516184 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;21 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;gcframe, i32 3
   store &#37;jl_value_t addrspace&#40;10&#41;* &#37;19, &#37;jl_value_t addrspace&#40;10&#41;** &#37;21
@@ -807,7 +810,7 @@ tr &#40;i64 275268280 to &#37;jl_value_t addrspace&#40;10&#41;**&#41;, align 8
   &#37;23 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 0
   store &#37;jl_value_t addrspace&#40;10&#41;* addrspacecast &#40;&#37;jl_value_t* inttoptr &#40;i6
-4 134808528 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
+4 141362128 to &#37;jl_value_t*&#41; to &#37;jl_value_t addrspace&#40;10&#41;*&#41;, &#37;jl_value_t ad
 drspace&#40;10&#41;** &#37;23
   &#37;24 &#61; getelementptr &#37;jl_value_t addrspace&#40;10&#41;*, &#37;jl_value_t addrspace&#40;10&#41;
 ** &#37;3, i32 1
@@ -861,7 +864,7 @@ _t addrspace&#40;10&#41;** &#37;3, i32 3&#41;
 <pre class="output">
 ;  @ none:2 within &#96;outer&#39;
 ; Function Attrs: uwtable
-define double @julia_outer_20330&#40;&#41; #0 &#123;
+define double @julia_outer_18692&#40;&#41; #0 &#123;
 top:
   ret double 7.000000e&#43;00
 &#125;
@@ -888,7 +891,7 @@ top:
 <pre class="output">
 ;  @ none:3 within &#96;linearcombo&#39;
 ; Function Attrs: uwtable
-define double @julia_linearcombo_20332&#40;&#41; #0 &#123;
+define double @julia_linearcombo_18694&#40;&#41; #0 &#123;
 top:
   ret double 7.000000e&#43;00
 &#125;
@@ -925,7 +928,7 @@ g &#40;generic function with 1 method&#41;
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.g, false&#41;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.g, false&#41;
   x::UNION&#123;FLOAT64, INT64&#125;
   @_3::UNION&#123;NOTHING, TUPLE&#123;INT64,INT64&#125;&#125;
   i::Int64
@@ -965,11 +968,11 @@ ler.Const&#40;false, false&#41;
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.f, false&#41;
 
 Body::ANY
 1 ─ &#37;1 &#61; Base.vect&#40;1.0, 2, &quot;3&quot;&#41;::Array&#123;Any,1&#125;
-│   &#37;2 &#61; Main.WeaveSandBox11.rand&#40;&#37;1&#41;::ANY
+│   &#37;2 &#61; Main.WeaveSandBox3.rand&#40;&#37;1&#41;::ANY
 └──      return &#37;2
 </pre>
 
@@ -995,7 +998,7 @@ Body::ANY
 <pre class="output">
 ;  @ none:2 within &#96;g&#39;
 ; Function Attrs: uwtable
-define double @julia_g_20333&#40;&#41; #0 &#123;
+define double @julia_g_18695&#40;&#41; #0 &#123;
 top:
 ;  @ none:6 within &#96;g&#39;
   ret double 0x3F50000000000000
@@ -1023,7 +1026,7 @@ top:
 <pre class="output">
 ;  @ none:2 within &#96;g&#39;
 ; Function Attrs: uwtable
-define double @julia_g_20334&#40;&#41; #0 &#123;
+define double @julia_g_18696&#40;&#41; #0 &#123;
 top:
 ;  @ none:6 within &#96;g&#39;
   ret double 0x3F50000000000000
@@ -1067,14 +1070,14 @@ top:
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.calc_square, false&#41;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.calc_square, false&#41;
   x::Array&#123;Union&#123;Float64, Int64, String&#125;,1&#125;
   @_3::UNION&#123;NOTHING, TUPLE&#123;INT64,INT64&#125;&#125;
   i::Int64
   val::UNION&#123;FLOAT64, INT64, STRING&#125;
 
 Body::Nothing
-1 ─ &#37;1  &#61; Main.WeaveSandBox11.eachindex&#40;x&#41;::Base.OneTo&#123;Int64&#125;
+1 ─ &#37;1  &#61; Main.WeaveSandBox3.eachindex&#40;x&#41;::Base.OneTo&#123;Int64&#125;
 │         &#40;@_3 &#61; Base.iterate&#40;&#37;1&#41;&#41;
 │   &#37;3  &#61; &#40;@_3 &#61;&#61;&#61; nothing&#41;::Bool
 │   &#37;4  &#61; Base.not_int&#40;&#37;3&#41;::Bool
@@ -1086,7 +1089,7 @@ Body::Nothing
 │   &#37;10 &#61; val::UNION&#123;FLOAT64, INT64, STRING&#125;
 │   &#37;11 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;12 &#61; &#40;&#37;11&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│         Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;10, &#37;12&#41;
+│         Base.literal_pow&#40;Main.WeaveSandBox3.:^, &#37;10, &#37;12&#41;
 │         &#40;@_3 &#61; Base.iterate&#40;&#37;1, &#37;8&#41;&#41;
 │   &#37;15 &#61; &#40;@_3 &#61;&#61;&#61; nothing&#41;::Bool
 │   &#37;16 &#61; Base.not_int&#40;&#37;15&#41;::Bool
@@ -1126,13 +1129,13 @@ calc_square_inner &#40;generic function with 1 method&#41;
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.calc_square_inner, false&#41;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.calc_square_inner, false&#41;
   x::Int64
 
 Body::Int64
 1 ─ &#37;1 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;2 &#61; &#40;&#37;1&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│   &#37;3 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, x, &#37;2&#41;::Int64
+│   &#37;3 &#61; Base.literal_pow&#40;Main.WeaveSandBox3.:^, x, &#37;2&#41;::Int64
 └──      return &#37;3
 </pre>
 
@@ -1160,7 +1163,7 @@ Body::Int64
 
 
 <pre class="output">
-42.987 ns &#40;1 allocation: 112 bytes&#41;
+42.727 ns &#40;1 allocation: 112 bytes&#41;
 </pre>
 
 
@@ -1175,7 +1178,7 @@ Body::Int64
 
 
 <pre class="output">
-20.059 ns &#40;1 allocation: 64 bytes&#41;
+19.559 ns &#40;1 allocation: 64 bytes&#41;
 </pre>
 
 
@@ -1189,7 +1192,7 @@ Body::Int64
 
 
 <pre class="output">
-19.558 ns &#40;1 allocation: 64 bytes&#41;
+20.060 ns &#40;1 allocation: 64 bytes&#41;
 </pre>
 
 
@@ -1222,7 +1225,7 @@ f &#40;generic function with 2 methods&#41;
 
 
 <pre class="output">
-6.860 ms &#40;200001 allocations: 21.36 MiB&#41;
+7.126 ms &#40;200001 allocations: 21.36 MiB&#41;
 </pre>
 
 
@@ -1257,7 +1260,7 @@ f &#40;generic function with 2 methods&#41;
 
 
 <pre class="output">
-231.299 μs &#40;1 allocation: 112 bytes&#41;
+184.600 μs &#40;1 allocation: 112 bytes&#41;
 </pre>
 
 
@@ -1280,7 +1283,7 @@ f &#40;generic function with 2 methods&#41;
 
 
 <pre class="output">
-282.800 μs &#40;1 allocation: 112 bytes&#41;
+283.199 μs &#40;1 allocation: 112 bytes&#41;
 </pre>
 
 
@@ -1311,16 +1314,16 @@ f &#40;generic function with 2 methods&#41;
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
-  a::Main.WeaveSandBox11.MyType
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.f, false&#41;
+  a::Main.WeaveSandBox3.MyType
 
 Body::ANY
 1 ─ &#37;1 &#61; Base.getproperty&#40;a, :x&#41;::ABSTRACTFLOAT
 │   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::ANY
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox3.:^, &#37;1, &#37;3&#41;::ANY
 │   &#37;5 &#61; Base.getproperty&#40;a, :x&#41;::ABSTRACTFLOAT
-│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::ANY
+│   &#37;6 &#61; Main.WeaveSandBox3.sqrt&#40;&#37;5&#41;::ANY
 │   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::ANY
 └──      return &#37;7
 </pre>
@@ -1335,7 +1338,7 @@ Body::ANY
 
 
 <pre class="output">
-50.355 ns &#40;3 allocations: 48 bytes&#41;
+49.037 ns &#40;3 allocations: 48 bytes&#41;
 </pre>
 
 
@@ -1371,16 +1374,16 @@ Body::ANY
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
-  b::Main.WeaveSandBox11.MyTypeConcrete
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.f, false&#41;
+  b::Main.WeaveSandBox3.MyTypeConcrete
 
 Body::Float64
 1 ─ &#37;1 &#61; Base.getproperty&#40;b, :x&#41;::Float64
 │   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float64
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox3.:^, &#37;1, &#37;3&#41;::Float64
 │   &#37;5 &#61; Base.getproperty&#40;b, :x&#41;::Float64
-│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float64
+│   &#37;6 &#61; Main.WeaveSandBox3.sqrt&#40;&#37;5&#41;::Float64
 │   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float64
 └──      return &#37;7
 </pre>
@@ -1419,16 +1422,16 @@ Body::Float64
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
-  c::Main.WeaveSandBox11.MyTypeParametric&#123;Float64&#125;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.f, false&#41;
+  c::Main.WeaveSandBox3.MyTypeParametric&#123;Float64&#125;
 
 Body::Float64
 1 ─ &#37;1 &#61; Base.getproperty&#40;c, :x&#41;::Float64
 │   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float64
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox3.:^, &#37;1, &#37;3&#41;::Float64
 │   &#37;5 &#61; Base.getproperty&#40;c, :x&#41;::Float64
-│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float64
+│   &#37;6 &#61; Main.WeaveSandBox3.sqrt&#40;&#37;5&#41;::Float64
 │   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float64
 └──      return &#37;7
 </pre>
@@ -1457,16 +1460,16 @@ Body::Float64
 
 <pre class="output">
 Variables
-  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox11.f, false&#41;
-  c::Main.WeaveSandBox11.MyTypeParametric&#123;Float32&#125;
+  #self#::Core.Compiler.Const&#40;Main.WeaveSandBox3.f, false&#41;
+  c::Main.WeaveSandBox3.MyTypeParametric&#123;Float32&#125;
 
 Body::Float32
 1 ─ &#37;1 &#61; Base.getproperty&#40;c, :x&#41;::Float32
 │   &#37;2 &#61; Core.apply_type&#40;Base.Val, 2&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;, false&#41;
 │   &#37;3 &#61; &#40;&#37;2&#41;&#40;&#41;::Core.Compiler.Const&#40;Val&#123;2&#125;&#40;&#41;, false&#41;
-│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox11.:^, &#37;1, &#37;3&#41;::Float32
+│   &#37;4 &#61; Base.literal_pow&#40;Main.WeaveSandBox3.:^, &#37;1, &#37;3&#41;::Float32
 │   &#37;5 &#61; Base.getproperty&#40;c, :x&#41;::Float32
-│   &#37;6 &#61; Main.WeaveSandBox11.sqrt&#40;&#37;5&#41;::Float32
+│   &#37;6 &#61; Main.WeaveSandBox3.sqrt&#40;&#37;5&#41;::Float32
 │   &#37;7 &#61; &#40;&#37;4 &#43; &#37;6&#41;::Float32
 └──      return &#37;7
 </pre>
@@ -1479,7 +1482,7 @@ Body::Float32
 
 
 <pre class="output">
-1.599 ns &#40;0 allocations: 0 bytes&#41;
+1.299 ns &#40;0 allocations: 0 bytes&#41;
 </pre>
 
 

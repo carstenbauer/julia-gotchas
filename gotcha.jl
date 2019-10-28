@@ -1,5 +1,3 @@
-# # Julia Gotchas
-
 # ### Gotcha 1: Global scope
 # To the confusion of many newcomers, the following simple for loop
 # doesn't work as expected.
